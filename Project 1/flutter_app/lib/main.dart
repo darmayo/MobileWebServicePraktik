@@ -11,6 +11,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Login & Dashboard App',
+      theme: ThemeData(
+        primarySwatch: Colors.purple, // Menambahkan tema utama
+      ),
       home: LoginScreen(), // Menampilkan login screen sebagai tampilan awal
     );
   }
