@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -12,27 +11,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController _emailController = TextEditingController();
   TextEditingController _phoneController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
+  bool isLoading = false;
 
   Future<void> register() async {
-    // Simulasi API registrasi
-    final response = await http.post(
-      Uri.parse('https://your-backend-url/register'), // Ganti dengan URL API register
-      body: jsonEncode({
-        'name': _nameController.text,
-        'email': _emailController.text,
-        'phone': _phoneController.text,
-        'password': _passwordController.text,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      // Mendaftar pengguna baru di Supabase
+      final AuthResponse response = await Supabase.instance.client.auth.signUp(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
 
-    if (response.statusCode == 200) {
-      print('Registration successful');
-      Navigator.pop(context); // Kembali ke halaman login setelah registrasi berhasil
-    } else {
-      print('Registration failed');
+      // Jika registrasi berhasil, simpan data tambahan di tabel users
+      if (response.user != null) {
+        // Masukkan data tambahan (name dan phone) ke tabel users
+        await Supabase.instance.client.from('users').insert({
+          'user_id': response.user!.id,  // Menyimpan ID pengguna
+          'name': _nameController.text,
+          'phone': _phoneController.text,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Registration successful!')),
+        );
+        Navigator.pop(context); // Kembali ke halaman login setelah registrasi berhasil
+      }
+    } catch (e) {
+      print('Registration failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration error: $e')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -82,8 +96,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: register, // Panggil fungsi register
-              child: Text('Register'),
+              onPressed: isLoading ? null : register,
+              child: isLoading
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text('Register'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
                 minimumSize: Size(double.infinity, 50),
