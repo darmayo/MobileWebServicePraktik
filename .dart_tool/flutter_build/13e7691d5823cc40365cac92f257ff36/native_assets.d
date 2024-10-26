@@ -1,0 +1,1 @@
+ D:\\projek_flutter\\MobileWebServicePraktik\\pertemuan\ 5\\flutter_api\\.dart_tool\\flutter_build\\13e7691d5823cc40365cac92f257ff36\\native_assets.yaml: 
