@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class PaymentService {
-  final String serverKey = 'SB-Mid-server-TQgYv4K0-Q4CEx4jsgaKJEkI'; // Ganti dengan server key Sandbox Anda
+  final String serverKey = 'SB-Mid-server-TQgYv4K0-Q4CEx4jsgaKJEkI'; // server key
 
   Future<void> createTransaction(int amount, String email, String firstName, String lastName, String phone) async {
     final url = 'https://api.sandbox.midtrans.com/v2/charge';
