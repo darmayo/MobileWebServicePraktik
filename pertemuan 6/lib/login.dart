@@ -34,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final response = await http.post(
       Uri.parse('https://api.fonnte.com/send'),
       headers: {
-        'Authorization': 'kxUK5VDQzNgHsz7q4MLc', // Ganti dengan API key Fonnte Anda
+        'Authorization': 'kxUK5VDQzNgHsz7q4MLc', // API key Fonnte 
       },
       body: {
         'target': phoneNumber,
@@ -68,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (response.user != null) {
-        // Ambil nomor telepon dari database
+        // Mengambil nomor telepon dari database
         String? phoneNumber = await _getPhoneNumber(response.user!.id);
 
         if (phoneNumber != null) {

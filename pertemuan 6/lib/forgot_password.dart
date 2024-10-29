@@ -10,7 +10,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
   bool isLoading = false;
 
-  // Fungsi untuk mengirim tautan reset password
+  // Untuk mengirim tautan reset password
   Future<void> _sendResetPasswordLink() async {
     setState(() {
       isLoading = true;

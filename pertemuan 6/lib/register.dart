@@ -24,9 +24,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password: _passwordController.text,
       );
 
-      // Jika registrasi berhasil, simpan data tambahan di tabel users
+      // Jika registrasi berhasil, Menyimpan data tambahan di tabel users
       if (response.user != null) {
-        // Masukkan data tambahan (name dan phone) ke tabel users
+        // Memasukkan data tambahan (name dan phone) ke tabel users
         await Supabase.instance.client.from('users').insert({
           'user_id': response.user!.id,  // Menyimpan ID pengguna
           'name': _nameController.text,

@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase
 import 'payment_service.dart';
 
 class DashboardScreen extends StatefulWidget {
-  final VoidCallback clearInputs; // Tambahkan parameter clearInputs
+  final VoidCallback clearInputs; // Menambahkan parameter clearInputs
 
   DashboardScreen({required this.clearInputs});
 
@@ -21,7 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchUserDetails(); // Panggil fungsi untuk mengambil email dan nama pengguna
+    _fetchUserDetails(); // Memanggil fungsi untuk mengambil email dan nama pengguna
   }
 
   // Fungsi untuk mengambil email dan nama pengguna yang sedang login dari Supabase
@@ -35,8 +35,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           .maybeSingle();
 
       setState(() {
-        userEmail = user.email; // Ambil email dari objek user
-        userName = response?['name'] as String? ?? "User"; // Ambil nama dari hasil query Supabase
+        userEmail = user.email; // Mengambil email dari objek user
+        userName = response?['name'] as String? ?? "User"; // Mengambil nama dari hasil query Supabase
       });
     }
   }
@@ -70,7 +70,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void logout() {
-    widget.clearInputs(); // Panggil fungsi untuk mengosongkan input saat logout
+    widget.clearInputs(); // Memanggil fungsi untuk mengosongkan input saat logout
     Navigator.pop(context); // Kembali ke halaman login
   }
 
@@ -83,7 +83,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
-            onPressed: logout, // Panggil fungsi logout saat tombol logout ditekan
+            onPressed: logout, // Memanggil fungsi logout saat tombol logout diklik
           ),
         ],
       ),
@@ -196,7 +196,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ElevatedButton(
                       onPressed: () async {
                         int totalAmount = getTotalAmount();
-                        String email = userEmail ?? "default@example.com"; // Gunakan email pengguna atau default
+                        String email = userEmail ?? "default@example.com"; // Menggunakan email pengguna atau default
                         String firstName = userName?.split(" ").first ?? "User";
                         String lastName = userName?.split(" ").last ?? "Example";
                         String phone = "08123456789"; // Ganti dengan nomor telepon pengguna jika tersedia
