@@ -10,9 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Tambahan package untuk melakukan HTTP requests
   supabase_flutter: ^2.8.0
   http: ^1.2.2
+  url_launcher: ^6.0.20 
 
 dev_dependencies:
   flutter_test:
@@ -24,9 +24,9 @@ flutter:
 
   # Daftar assets (gambar-gambar yang digunakan dalam proyek)
   assets:
-    - assets/images/login_image.png
     - assets/images/avatar.png
     - assets/images/food_image.png
     - assets/images/noodle.png
     - assets/images/chicken.png
     - assets/images/french_fries.png
+    - assets/images/login_image.png

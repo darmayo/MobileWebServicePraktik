@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:math';
 import 'dashboard.dart'; // Import Dashboard
 import 'register.dart'; // Import Register
+import 'forgot_password.dart'; // Import ForgotPassword
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -17,6 +18,16 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isOtpSent = false;
   bool isLoading = false;
   String? generatedOtp;
+
+  // Fungsi untuk mengosongkan semua input
+  void clearInputs() {
+    _emailController.clear();
+    _passwordController.clear();
+    _otpController.clear();
+    setState(() {
+      isOtpSent = false;
+    });
+  }
 
   // Fungsi untuk mengirim OTP ke WhatsApp melalui Fonnte
   Future<void> _sendOtp(String phoneNumber, String otp) async {
@@ -96,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
         .from('users')
         .select('phone')
         .eq('user_id', userId)
-        .maybeSingle(); // Menggunakan maybeSingle() untuk menghindari error jika tidak ada baris
+        .maybeSingle();
 
     if (response != null && response['phone'] != null) {
       return response['phone'] as String?;
@@ -107,15 +118,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Fungsi untuk verifikasi OTP
   Future<void> verifyOtp() async {
-    print('Generated OTP: $generatedOtp'); // Debugging
-    print('User entered OTP: ${_otpController.text}'); // Debugging
-
     if (_otpController.text == generatedOtp) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => DashboardScreen()),
+        MaterialPageRoute(
+          builder: (context) => DashboardScreen(clearInputs: clearInputs),
+        ),
       );
-      print('OTP verified successfully, navigating to Dashboard');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Invalid OTP. Please try again.')),
@@ -130,83 +139,95 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.purple,
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/images/login_image.png',
-              height: 150,
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Login',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/login_image.png',
+                height: 150,
               ),
-            ),
-            SizedBox(height: 16),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
+              SizedBox(height: 20),
+              Text(
+                'Welcome to My App',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-            ),
-            SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () {},
-                child: Text('Forgot Password?'),
+              SizedBox(height: 20),
+              Text(
+                'Login',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-            ),
-            SizedBox(height: 16),
-            if (isOtpSent)
+              SizedBox(height: 16),
               TextField(
-                controller: _otpController,
+                controller: _emailController,
                 decoration: InputDecoration(
-                  labelText: 'Enter OTP',
+                  labelText: 'Email',
                   border: OutlineInputBorder(),
                 ),
               ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: isLoading ? null : (isOtpSent ? verifyOtp : login),
-              child: isLoading
-                  ? CircularProgressIndicator(color: Colors.white)
-                  : Text(isOtpSent ? 'Verify OTP' : 'Login'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+              SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
                 ),
               ),
-            ),
-            SizedBox(height: 16),
-            Text('Or'),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegisterScreen()),
-                );
-              },
-              child: Text(
-                'Register',
-                style: TextStyle(color: Colors.purple),
+              SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+                    );
+                  },
+                  child: Text('Forgot Password?'),
+                ),
               ),
-            ),
-          ],
+              SizedBox(height: 16),
+              if (isOtpSent)
+                TextField(
+                  controller: _otpController,
+                  decoration: InputDecoration(
+                    labelText: 'Enter OTP',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: isLoading ? null : (isOtpSent ? verifyOtp : login),
+                child: isLoading
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : Text(isOtpSent ? 'Verify OTP' : 'Login'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber,
+                  minimumSize: Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              Text('Or'),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterScreen()),
+                  );
+                },
+                child: Text(
+                  'Register',
+                  style: TextStyle(color: Colors.purple),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
