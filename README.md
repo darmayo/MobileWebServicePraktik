@@ -1,5 +1,7 @@
 5220411265_I Nyoman Darmayoga
 
+# Pertemuan 1
+
 Pengertian Mobile
 Mobile adalah sistem perangkat lunak yang memungkinkan pengguna bergerak bebas
 menggunakan perangkat seperti PDA atau ponsel. Android dan iOS mendominasi pasar sistem
