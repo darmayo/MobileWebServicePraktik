@@ -1,5 +1,219 @@
 5220411265_I Nyoman Darmayoga
 
+Pengertian Mobile
+Mobile adalah sistem perangkat lunak yang memungkinkan pengguna bergerak bebas
+menggunakan perangkat seperti PDA atau ponsel. Android dan iOS mendominasi pasar sistem
+operasi mobile. Aplikasi mobile awalnya terbatas, tetapi dengan kemajuan perangkat keras,
+aplikasi menjadi lebih canggih dan beragam, seperti aplikasi sosial, jual beli, navigasi, hingga
+berbasis suara seperti Google Assistant. Inovasi ini terus berkembang untuk memenuhi
+kebutuhan pengguna.
+
+Smartphone: Perangkat mobile yang mengombinasikan fitur telepon dengan
+kapabilitas komputasi. Smartphone dilengkapi dengan sistem operasi seperti Android atau iOS,
+memungkinkan pengguna untuk menjalankan aplikasi, menelepon, mengirim pesan, browsing
+internet, dan melakukan berbagai aktivitas lainnya.
+
+Tablet: Perangkat portabel berlayar sentuh dengan ukuran lebih besar daripada
+smartphone, sering digunakan untuk aktivitas seperti menonton video, membaca, atau
+mengerjakan tugas produktivitas. Tablet mendukung aplikasi dan fitur yang serupa dengan
+smartphone, tetapi lebih cocok untuk penggunaan yang membutuhkan layar besar.
+
+Smartwatch: Jam tangan pintar yang berfungsi sebagai perangkat pendamping
+smartphone, dapat menampilkan notifikasi, melacak aktivitas fisik, serta menjalankan aplikasi
+tertentu, seperti pemantauan kesehatan.
+
+Pengertian Web Service
+Web Service adalah layanan yang berbasis web yang memungkinkan aplikasi
+berkomunikasi dan bertukar data melalui internet. Layanan ini menggunakan protokol standar
+seperti HTTP/HTTPS, sehingga memungkinkan berbagai sistem untuk berinteraksi satu sama
+lain, biasanya melalui API (Application Programming Interface). Contoh umum web service
+adalah RESTful API dan SOAP, yang digunakan untuk menghubungkan aplikasi dengan server
+atau layanan lainnya.
+
+Bahasa Pemrograman
+Pemrograman Web
+Bahasa Pemrograman Code Hello World
+JavaScript: Bahasa pemrograman yang
+digunakan untuk mengembangkan aplikasi
+di perangkat mobile, desktop, serta situs web.
+console.log("Hello, World!");
+Python: Bahasa pemrograman yang
+digunakan untuk pengkodean dinamis dan
+pengembangan aplikasi berbasis web.
+print("Hello, World!")
+C++: Bahasa pemrograman yang sesuai
+untuk membuat aplikasi baik di desktop
+maupun web.
+#include <iostream>
+using namespace std;
+int main() {
+cout << "Hello, World!" << endl;
+return 0;
+}
+AJAX: Bahasa pemrograman yang
+menjadikan web lebih interaktif.
+// AJAX example to print "Hello, World!" in
+console
+const xhr = new XMLHttpRequest();
+xhr.open('GET',
+'https://api.example.com/hello', true);
+xhr.onload = function () {
+console.log("Hello, World!");
+};
+xhr.send();
+PHP: Bahasa pemrograman sisi server untuk
+aplikasi web dinamis.
+<?php
+echo "Hello, World!";
+?>
+Golang: Bahasa pemrograman efisien untuk
+pengembangan aplikasi web cepat.
+package main
+import "fmt"
+func main() {
+fmt.Println("Hello, World!")
+}
+Ruby: Bahasa pemrograman dengan
+framework Ruby on Rails untuk aplikasi web
+cepat.
+puts "Hello, World!"
+Pemrograman Mobile
+Bahasa Pemrograman Code Hello World
+
+Java: Bahasa pemrograman yang terkenal
+untuk pengembangan aplikasi Android. Java
+dihargai karena kestabilannya, kemudahan
+penggunaannya, dan dukungan dari
+komunitas pengembang.
+
+public class HelloWorld {
+public static void main(String[] args) {
+System.out.println("Hello, World!");
+}
+}
+Swift: Bahasa pemrograman yang terkenal
+untuk membuat aplikasi iOS. Swift
+diperkenalkan pada tahun 2014 dan kode
+sumbernya dirilis pada tahun 2015.
+
+print("Hello, World!")
+Flutter: Software Development Kit (SDK)
+yang memungkinkan pengembang untuk
+membuat aplikasi mobile lintas platform,
+termasuk Android, iOS, Linux, Mac,
+Windows, Google Fuchsia, dan platform
+web.
+
+import 'package:flutter/material.dart';
+void main() {
+runApp(MaterialApp(
+home: Scaffold(
+appBar: AppBar(title: Text('Hello
+World')),
+body: Center(child: Text('Hello,
+World!')),
+),
+));
+}
+Pemrograman Dekstop
+Bahasa Pemrograman Code Hello World
+
+Delphi adalah IDE (Integrated Development
+Environment) dan bahasa pemrograman
+yang berbasis pada Object Pascal.
+Digunakan untuk mengembangkan aplikasi
+desktop dan mobile dengan antarmuka grafis
+yang canggih.
+
+program HelloWorld;
+begin
+WriteLn('Hello, World!');
+end.
+Electron adalah framework open-source
+yang memungkinkan pengembang membuat
+aplikasi desktop menggunakan teknologi
+web seperti HTML, CSS, dan JavaScript.
+Framework ini memungkinkan pembuatan
+aplikasi lintas platform yang dapat berjalan
+di Windows, macOS, dan Linux.
+
+const { app, BrowserWindow } =
+require('electron');
+app.on('ready', () => {
+let win = new BrowserWindow({ width:
+800, height: 600 });
+win.loadURL('data:text/html;charset=utf-
+8,<h1>Hello, World!</h1>');
+});
+Perl adalah bahasa pemrograman yang
+terkenal karena kemampuannya dalam
+mengolah teks dan memanipulasi data.
+Sering digunakan dalam pengembangan
+web, administrasi sistem, dan pemrograman
+skrip, Perl memiliki sintaks yang fleksibel
+dan komunitas yang aktif.
+print "Hello, World!\n";
+Pemrograman IOT
+Bahasa Pemrograman Code Hello World
+Delphi adalah IDE (Integrated Development
+Environment) dan bahasa pemrograman
+yang berbasis pada Object Pascal.
+Digunakan untuk mengembangkan aplikasi
+desktop dan mobile dengan antarmuka grafis
+yang canggih.
+print("Hello, World!")
+Database
+Relational Database: Menyimpan data dalam tabel yang saling berhubungan,
+menggunakan SQL. C
+NoSQL Database: Menangani data tidak terstruktur; terdiri dari Document, Key-
+Value, Column-Family, dan Graph. Contoh: MongoDB.
+Object-Oriented Database: Menyimpan data dalam bentuk objek, mirip dengan
+pemrograman berorientasi objek. Contoh: ObjectDB.
+Hierarchical Database: Menyusun data dalam struktur pohon dengan hubungan satu
+orang tua ke banyak anak. Contoh: IMS.
+Network Database: Memungkinkan hubungan banyak-ke-banyak dalam bentuk graf.
+Contoh: IDS.
+Time-Series Database: Dioptimalkan untuk data yang berubah seiring waktu. Contoh:
+InfluxDB.
+Spatial Database: Menyimpan dan menganalisis data geospasial. Contoh: PostGIS.
+Distributed Database: Data tersebar di lokasi berbeda namun terlihat sebagai satu
+sistem. Contoh: Google Spanner.
+Install Flutter
+https://docs.flutter.dev/get-started/install/windows/mobile
+
+Ekstrak flutter
+
+Setting Path
+
+Cek flutter apakah sudah berhasil terinstall
+
+Cek apakah flutter sudah siap di jalankan atau belum dan ternyata memiliki masalah pada
+android studio yang belum terinstall
+
+Install Android Studio
+https://developer.android.com/studio?hl=id
+
+Install sdk
+https://docs.flutter.dev/get-started/install?gad_source=1&gclid=Cj0KCQjwu-
+63BhC9ARIsAMMTLXQTAGrL1poNozcpfEZxsjyrnWlkZtHRW3b5H08yKTJ2DmgksJnqL
+2IaAuZbEALw_wcB&gclsrc=aw.ds
+
+Install Android studio dan sdk yang telah di download tadi, next aja saat installasi jika perlu
+rubah tempat untuk menyimpannya silahkan sesuaikan
+
+Disini sengaja saya tidak mencetang agar muncul shortcuts
+
+Cek Kembali apakah flutter masih terdapat masalah atau tidak
+
+Cek sdk apakah sudah berhasil terinstall
+
+Lalu coba buat untuk menjalankannya di visual studio code
+
+Berikut hasil jika flutter sudah berhasil terinstall
+![image](https://github.com/user-attachments/assets/ffc94799-e7c2-4095-9c8a-d84e3bbafd4a)
+
+
+
 
 # Pertemuan 3
 
