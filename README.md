@@ -982,3 +982,26 @@ flutter:
 ## 8. Output project yang telah di buat
 ![WhatsApp Image 2024-10-13 at 00 11 08](https://github.com/user-attachments/assets/5f5dcfe2-3390-473a-bbb0-fc53d9f52d41)
 ![WhatsApp Image 2024-10-13 at 00 13 04](https://github.com/user-attachments/assets/897fb4f7-345b-4a16-b42f-5c8e43cea122)
+
+
+# Pertemuan 5 dan 6
+Supabase & Midtrans Integrated Flutter App
+
+Proyek ini adalah aplikasi Flutter dengan integrasi Supabase sebagai backend untuk autentikasi pengguna dan manajemen data, serta Midtrans untuk pemrosesan pembayaran. Aplikasi ini mendukung fitur login dengan OTP, registrasi pengguna, reset password, dan pembayaran.
+
+## Fitur
+1. Login dan Logout:
+Autentikasi menggunakan email dan password.
+Verifikasi OTP menggunakan Fonnte.
+2. Registrasi:
+Menyimpan data pengguna (nama, email, nomor telepon) ke tabel Supabase.
+3. Reset Password:
+Mengirimkan link reset password melalui email menggunakan Supabase.
+4. Dashboard:
+Menampilkan sapaan berbasis waktu.
+Memilih item makanan dan menghitung total biaya.
+5.Pembayaran:
+Mengintegrasikan Midtrans untuk pembayaran melalui transfer bank.
+6. Desain Responsif:
+UI yang ramah pengguna dengan tema warna utama ungu dan kuning.
+``` bash 
