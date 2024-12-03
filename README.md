@@ -1008,6 +1008,7 @@ UI yang ramah pengguna dengan tema warna utama ungu dan kuning.
 ## Struktur Proyek
 1. main.dart: Titik masuk aplikasi Flutter.
    code:
+   ``` bash
    import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login.dart'; // Import login screen
@@ -1036,7 +1037,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-``` bash
+```
 2. login.dart: Layar login dengan fitur OTP.
 
 4. register.dart: Layar registrasi pengguna.
