@@ -1,4 +1,4 @@
-5220411265_I Nyoman Darmayoga
+![02047143-caac-4997-8997-1fbd29e3c0b6](https://github.com/user-attachments/assets/72b7907f-0941-46fc-aa0c-3df58592a839)5220411265_I Nyoman Darmayoga
 
 # Pertemuan 1
 
@@ -1847,3 +1847,27 @@ class PaymentService {
   }
 }
 ```
+
+## Hasil Tampilan
+
+# Halaman Login
+1. Form untuk email dan password.
+![f9431bbb-0ec5-49a0-84a2-ef44aa6408d7](https://github.com/user-attachments/assets/12f11f7d-31d2-4e95-9cde-71e1e5ec5fac)
+2. Verifikasi OTP.
+![02047143-caac-4997-8997-1fbd29e3c0b6](https://github.com/user-attachments/assets/988d4354-45dd-4ea4-8eab-576407f13e86)
+
+#. Halaman Registrasi
+1. Input untuk nama lengkap, email, nomor telepon, dan password.
+   
+# Halaman Dashboard
+1. Sapaan berdasarkan waktu.
+2. Tampilan daftar makanan yang bisa dipilih.
+3. Total biaya dan tombol pembayaran.
+
+
+## Teknologi yang Digunakan
+
+# Flutter: Framework untuk membangun aplikasi mobile.
+# Supabase: Backend sebagai layanan (BaaS).
+# Midtrans: Gateway pembayaran.
+# Fonnte: Pengiriman OTP melalui WhatsApp.
