@@ -1038,9 +1038,9 @@ class MyApp extends StatelessWidget {
   }
 }
 
-2. login.dart: Layar login dengan fitur OTP.
+#2. login.dart: Layar login dengan fitur OTP.
     code:
-   ``` bash
+   ```
    import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -1276,7 +1276,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
+```
 4. register.dart: Layar registrasi pengguna.
 5. forgot_password.dart: Layar untuk reset password.
 6. dashboard.dart: Halaman utama setelah login.
