@@ -1006,9 +1006,9 @@ Mengintegrasikan Midtrans untuk pembayaran melalui transfer bank.
 UI yang ramah pengguna dengan tema warna utama ungu dan kuning.
 
 ## Struktur Proyek
-1. main.dart: Titik masuk aplikasi Flutter.
+# 1. main.dart: Titik masuk aplikasi Flutter.
    code:
-   ``` bash
+   ``` 
    import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login.dart'; // Import login screen
@@ -1037,8 +1037,8 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-#2. login.dart: Layar login dengan fitur OTP.
+```
+# 2. login.dart: Layar login dengan fitur OTP.
     code:
    ```
    import 'package:flutter/material.dart';
@@ -1277,7 +1277,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 ```
-4. register.dart: Layar registrasi pengguna.
+# 4. register.dart: Layar registrasi pengguna.
+      ```
+      
 5. forgot_password.dart: Layar untuk reset password.
 6. dashboard.dart: Halaman utama setelah login.
 7. payment_service.dart: Layanan untuk integrasi pembayaran dengan Midtrans.
