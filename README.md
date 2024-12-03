@@ -1277,10 +1277,573 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 ```
-# 4. register.dart: Layar registrasi pengguna.
-      ```
-      
-5. forgot_password.dart: Layar untuk reset password.
-6. dashboard.dart: Halaman utama setelah login.
-7. payment_service.dart: Layanan untuk integrasi pembayaran dengan Midtrans.
+# 3. register.dart: Layar registrasi pengguna.
+      code: 
+ ```
+      import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+class RegisterScreen extends StatefulWidget {
+  @override
+  _RegisterScreenState createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  TextEditingController _nameController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _phoneController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
+  bool isLoading = false;
+
+  Future<void> register() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      // Mendaftar pengguna baru di Supabase
+      final AuthResponse response = await Supabase.instance.client.auth.signUp(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      // Jika registrasi berhasil, Menyimpan data tambahan di tabel users
+      if (response.user != null) {
+        // Memasukkan data tambahan (name dan phone) ke tabel users
+        await Supabase.instance.client.from('users').insert({
+          'user_id': response.user!.id,  // Menyimpan ID pengguna
+          'name': _nameController.text,
+          'phone': _phoneController.text,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Registration successful!')),
+        );
+        Navigator.pop(context); // Kembali ke halaman login setelah registrasi berhasil
+      }
+    } catch (e) {
+      print('Registration failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration error: $e')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Register'),
+        backgroundColor: Colors.purple,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Full Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(
+                labelText: 'Email',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: _phoneController,
+              decoration: InputDecoration(
+                labelText: 'Phone Number',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: isLoading ? null : register,
+              child: isLoading
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text('Register'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                minimumSize: Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+# 4. forgot_password.dart: Layar untuk reset password.
+    code:
+```
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class ForgotPasswordScreen extends StatefulWidget {
+  @override
+  _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  bool isLoading = false;
+
+  // Untuk mengirim tautan reset password
+  Future<void> _sendResetPasswordLink() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Mengirim link reset password tanpa memeriksa respons
+      await Supabase.instance.client.auth.resetPasswordForEmail(_emailController.text);
+
+      // Menampilkan pesan sukses
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Link reset password telah dikirim ke email Anda')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Terjadi kesalahan: $e')),
+        );
+      }
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Forgot Password"),
+        backgroundColor: Colors.purple,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Masukkan email Anda untuk menerima link reset password',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 20),
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(
+                labelText: 'Email',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: isLoading ? null : _sendResetPasswordLink,
+              child: isLoading
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text('Kirim Link Reset Password'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                minimumSize: Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+# 5. dashboard.dart: Halaman utama setelah login.
+    code:
+```
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase
+import 'payment_service.dart';
+
+class DashboardScreen extends StatefulWidget {
+  final VoidCallback clearInputs; // Menambahkan parameter clearInputs
+
+  DashboardScreen({required this.clearInputs});
+
+  @override
+  _DashboardScreenState createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final PaymentService paymentService = PaymentService();
+  final SupabaseClient supabase = Supabase.instance.client; // Instance Supabase
+  List<FoodItem> selectedItems = [];
+  String? userEmail; // Variabel untuk menyimpan email pengguna
+  String? userName; // Variabel untuk menyimpan nama pengguna
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserDetails(); // Memanggil fungsi untuk mengambil email dan nama pengguna
+  }
+
+  // Fungsi untuk mengambil email dan nama pengguna yang sedang login dari Supabase
+  void _fetchUserDetails() async {
+    final user = supabase.auth.currentUser;
+    if (user != null) {
+      final response = await supabase
+          .from('users')
+          .select('name')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      setState(() {
+        userEmail = user.email; // Mengambil email dari objek user
+        userName = response?['name'] as String? ?? "User"; // Mengambil nama dari hasil query Supabase
+      });
+    }
+  }
+
+  // Fungsi untuk menentukan sapaan berdasarkan waktu saat ini
+  String getGreetingMessage() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) {
+      return 'Selamat Pagi';
+    } else if (hour >= 12 && hour < 15) {
+      return 'Selamat Siang';
+    } else if (hour >= 15 && hour < 18) {
+      return 'Selamat Sore';
+    } else {
+      return 'Selamat Malam';
+    }
+  }
+
+  void toggleSelection(FoodItem item) {
+    setState(() {
+      if (selectedItems.contains(item)) {
+        selectedItems.remove(item);
+      } else {
+        selectedItems.add(item);
+      }
+    });
+  }
+
+  int getTotalAmount() {
+    return selectedItems.fold(0, (total, item) => total + item.amount);
+  }
+
+  void logout() {
+    widget.clearInputs(); // Memanggil fungsi untuk mengosongkan input saat logout
+    Navigator.pop(context); // Kembali ke halaman login
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Dashboard'),
+        backgroundColor: Colors.purple,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: logout, // Memanggil fungsi logout saat tombol logout diklik
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundImage: AssetImage('assets/images/avatar.png'),
+                  ),
+                  SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Hallo, $userName',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        getGreetingMessage(),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.asset(
+                  'assets/images/food_image.png',
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FoodItemWidget(
+                    item: FoodItem(
+                      imagePath: 'assets/images/noodle.png',
+                      foodName: 'Noodle',
+                      price: 'Rp23.000',
+                      amount: 23000,
+                    ),
+                    isSelected: selectedItems.contains(FoodItem(
+                      imagePath: 'assets/images/noodle.png',
+                      foodName: 'Noodle',
+                      price: 'Rp23.000',
+                      amount: 23000,
+                    )),
+                    onSelect: toggleSelection,
+                  ),
+                  FoodItemWidget(
+                    item: FoodItem(
+                      imagePath: 'assets/images/chicken.png',
+                      foodName: 'Chicken',
+                      price: 'Rp15.000',
+                      amount: 15000,
+                    ),
+                    isSelected: selectedItems.contains(FoodItem(
+                      imagePath: 'assets/images/chicken.png',
+                      foodName: 'Chicken',
+                      price: 'Rp15.000',
+                      amount: 15000,
+                    )),
+                    onSelect: toggleSelection,
+                  ),
+                  FoodItemWidget(
+                    item: FoodItem(
+                      imagePath: 'assets/images/french_fries.png',
+                      foodName: 'French Fries',
+                      price: 'Rp11.000',
+                      amount: 11000,
+                    ),
+                    isSelected: selectedItems.contains(FoodItem(
+                      imagePath: 'assets/images/french_fries.png',
+                      foodName: 'French Fries',
+                      price: 'Rp11.000',
+                      amount: 11000,
+                    )),
+                    onSelect: toggleSelection,
+                  ),
+                ],
+              ),
+            ),
+            if (selectedItems.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Total: Rp${getTotalAmount()}',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () async {
+                        int totalAmount = getTotalAmount();
+                        String email = userEmail ?? "default@example.com"; // Menggunakan email pengguna atau default
+                        String firstName = userName?.split(" ").first ?? "User";
+                        String lastName = userName?.split(" ").last ?? "Example";
+                        String phone = "08123456789"; // Ganti dengan nomor telepon pengguna jika tersedia
+
+                        try {
+                          await paymentService.createTransaction(totalAmount, email, firstName, lastName, phone);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Pembayaran berhasil diproses')),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Pembayaran gagal: $e')),
+                          );
+                        }
+                      },
+                      child: Text('Lanjutkan ke Pembayaran'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Definisi kelas FoodItem
+class FoodItem {
+  final String imagePath;
+  final String foodName;
+  final String price;
+  final int amount;
+
+  const FoodItem({
+    required this.imagePath,
+    required this.foodName,
+    required this.price,
+    required this.amount,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FoodItem &&
+          runtimeType == other.runtimeType &&
+          foodName == other.foodName;
+
+  @override
+  int get hashCode => foodName.hashCode;
+}
+
+// Definisi widget FoodItemWidget
+class FoodItemWidget extends StatelessWidget {
+  final FoodItem item;
+  final bool isSelected;
+  final Function(FoodItem) onSelect;
+
+  const FoodItemWidget({
+    required this.item,
+    required this.isSelected,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Image.asset(
+            item.imagePath,
+            height: 100,
+            width: 100,
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.foodName,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  item.price,
+                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                ),
+              ],
+            ),
+          ),
+          Checkbox(
+            value: isSelected,
+            onChanged: (bool? value) {
+              onSelect(item);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+# 6. payment_service.dart: Layanan untuk integrasi pembayaran dengan Midtrans.
+  	code
+```
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class PaymentService {
+  final String serverKey = 'SB-Mid-server-TQgYv4K0-Q4CEx4jsgaKJEkI'; // server key
+
+  Future<void> createTransaction(int amount, String email, String firstName, String lastName, String phone) async {
+    final url = 'https://api.sandbox.midtrans.com/v2/charge';
+
+    final headers = {
+      'Authorization': 'Basic ${base64Encode(utf8.encode("$serverKey:"))}',
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      "payment_type": "bank_transfer",
+      "transaction_details": {
+        "order_id": "order-${DateTime.now().millisecondsSinceEpoch}",
+        "gross_amount": amount,
+      },
+      "customer_details": {
+        "email": email, // Email pengguna
+        "first_name": firstName,
+        "last_name": lastName,
+        "phone": phone
+      },
+      "bank_transfer": {
+        "bank": "btpn",
+      }
+    });
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      print('Transaction created successfully: $data');
+      // Tampilkan pesan sukses di sini atau gunakan data untuk notifikasi pengguna
+    } else {
+      print('Failed to create transaction: ${response.body}');
+      // Tampilkan pesan error di sini
+    }
+  }
+}
+```
