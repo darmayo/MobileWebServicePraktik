@@ -1004,4 +1004,43 @@ Memilih item makanan dan menghitung total biaya.
 Mengintegrasikan Midtrans untuk pembayaran melalui transfer bank.
 6. Desain Responsif:
 UI yang ramah pengguna dengan tema warna utama ungu dan kuning.
-``` bash 
+
+## Struktur Proyek
+1. main.dart: Titik masuk aplikasi Flutter.
+   code:
+   import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'login.dart'; // Import login screen
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://owlegltfdnlmphpkgrxj.supabase.co', // URL Supabase 
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93bGVnbHRmZG5sbXBocGtncnhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk4NjY0NTUsImV4cCI6MjA0NTQ0MjQ1NX0.pv9z34zDYse02LdNCcDgYfJoAAPoM8BiS6eF6yyVM04', // Ganti dengan Anon Key Supabase Anda
+  );
+
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Supabase Auth Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.purple,
+      ),
+      home: LoginScreen(), // Halaman login sebagai halaman awal
+    );
+  }
+}
+``` bash
+2. login.dart: Layar login dengan fitur OTP.
+
+4. register.dart: Layar registrasi pengguna.
+5. forgot_password.dart: Layar untuk reset password.
+6. dashboard.dart: Halaman utama setelah login.
+7. payment_service.dart: Layanan untuk integrasi pembayaran dengan Midtrans.
+
