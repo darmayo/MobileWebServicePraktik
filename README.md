@@ -1867,6 +1867,7 @@ class PaymentService {
 1. Sapaan berdasarkan waktu.
 2. Tampilan daftar makanan yang bisa dipilih.
 3. Total biaya dan tombol pembayaran.
+   
 ![5db51234-6317-4d5c-ae55-8cd3a5b59504](https://github.com/user-attachments/assets/38c6515c-96e8-4418-8e27-a56826113d75)
 
 ## Teknologi yang Digunakan
