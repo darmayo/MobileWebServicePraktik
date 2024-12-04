@@ -1853,7 +1853,9 @@ class PaymentService {
 
    
   ![f9431bbb-0ec5-49a0-84a2-ef44aa6408d7](https://github.com/user-attachments/assets/12f11f7d-31d2-4e95-9cde-71e1e5ec5fac)
-3. Verifikasi OTP.
+
+  
+2. Verifikasi OTP.
 
   ![02047143-caac-4997-8997-1fbd29e3c0b6](https://github.com/user-attachments/assets/988d4354-45dd-4ea4-8eab-576407f13e86)
 
