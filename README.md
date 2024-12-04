@@ -1852,18 +1852,22 @@ class PaymentService {
 
 # Halaman Login
 1. Form untuk email dan password.
-![f9431bbb-0ec5-49a0-84a2-ef44aa6408d7](https://github.com/user-attachments/assets/12f11f7d-31d2-4e95-9cde-71e1e5ec5fac)
+  ![f9431bbb-0ec5-49a0-84a2-ef44aa6408d7](https://github.com/user-attachments/assets/12f11f7d-31d2-4e95-9cde-71e1e5ec5fac)
 2. Verifikasi OTP.
-![02047143-caac-4997-8997-1fbd29e3c0b6](https://github.com/user-attachments/assets/988d4354-45dd-4ea4-8eab-576407f13e86)
+  ![02047143-caac-4997-8997-1fbd29e3c0b6](https://github.com/user-attachments/assets/988d4354-45dd-4ea4-8eab-576407f13e86)
+
+
 
 #. Halaman Registrasi
 1. Input untuk nama lengkap, email, nomor telepon, dan password.
+   ![6fee7624-e661-4f32-9427-ad8c24145482](https://github.com/user-attachments/assets/123642b2-4a80-41c5-82ea-daae3a612834)
    
 # Halaman Dashboard
+
 1. Sapaan berdasarkan waktu.
 2. Tampilan daftar makanan yang bisa dipilih.
 3. Total biaya dan tombol pembayaran.
-
+![5db51234-6317-4d5c-ae55-8cd3a5b59504](https://github.com/user-attachments/assets/38c6515c-96e8-4418-8e27-a56826113d75)
 
 ## Teknologi yang Digunakan
 
