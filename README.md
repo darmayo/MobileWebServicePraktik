@@ -1,5 +1,3 @@
-![02047143-caac-4997-8997-1fbd29e3c0b6](https://github.com/user-attachments/assets/72b7907f-0941-46fc-aa0c-3df58592a839)5220411265_I Nyoman Darmayoga
-
 # Pertemuan 1
 
 Pengertian Mobile
