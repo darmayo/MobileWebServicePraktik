@@ -1863,7 +1863,9 @@ class PaymentService {
 
 #. Halaman Registrasi
 1. Input untuk nama lengkap, email, nomor telepon, dan password.
-   ![6fee7624-e661-4f32-9427-ad8c24145482](https://github.com/user-attachments/assets/123642b2-4a80-41c5-82ea-daae3a612834)
+
+  ![29e4d217-6d95-4cac-87da-e5ebc3ac199d](https://github.com/user-attachments/assets/ed6ae1a4-fd08-448e-b9a5-aac3d4dcd485)
+  
    
 # Halaman Dashboard
 
