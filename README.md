@@ -1795,7 +1795,7 @@ class FoodItemWidget extends StatelessWidget {
 }
 ```
 # 6. payment_service.dart: Layanan untuk integrasi pembayaran dengan Midtrans.
-  	code
+  	code:
 ```
 import 'dart:convert';
 import 'package:http/http.dart' as http;
