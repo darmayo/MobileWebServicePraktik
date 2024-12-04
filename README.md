@@ -1877,7 +1877,7 @@ class PaymentService {
 
 ## Teknologi yang Digunakan
 
-# Flutter: Framework untuk membangun aplikasi mobile.
-# Supabase: Backend sebagai layanan (BaaS).
-# Midtrans: Gateway pembayaran.
-# Fonnte: Pengiriman OTP melalui WhatsApp.
+1. Flutter: Framework untuk membangun aplikasi mobile.
+2. Supabase: Backend sebagai layanan (BaaS).
+3. Midtrans: Gateway pembayaran.
+4. Fonnte: Pengiriman OTP melalui WhatsApp.
