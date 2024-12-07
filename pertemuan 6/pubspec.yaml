@@ -9,10 +9,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  encrypt: ^5.0.0
+  flutter_dotenv: ^5.0.2
   supabase_flutter: ^2.8.0
   http: ^1.2.2
-  url_launcher: ^6.0.20 
+  url_launcher: ^6.0.20
 
 dev_dependencies:
   flutter_test:

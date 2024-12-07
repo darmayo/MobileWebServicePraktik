@@ -29,12 +29,29 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  // Validasi input untuk login
+  bool _validateInputs() {
+    if (!_emailController.text.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter a valid email address')),
+      );
+      return false;
+    }
+    if (_passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Password cannot be empty')),
+      );
+      return false;
+    }
+    return true;
+  }
+
   // Fungsi untuk mengirim OTP ke WhatsApp melalui Fonnte
   Future<void> _sendOtp(String phoneNumber, String otp) async {
     final response = await http.post(
       Uri.parse('https://api.fonnte.com/send'),
       headers: {
-        'Authorization': 'kxUK5VDQzNgHsz7q4MLc', // API key Fonnte 
+        'Authorization': 'kxUK5VDQzNgHsz7q4MLc', // API key Fonnte
       },
       body: {
         'target': phoneNumber,
@@ -58,6 +75,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Fungsi login untuk autentikasi email dan password
   Future<void> login() async {
+    if (!_validateInputs()) return; // Validasi input sebelum login
+
     setState(() {
       isLoading = true;
     });
@@ -116,8 +135,21 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Validasi OTP
+  bool _validateOtpInput() {
+    if (_otpController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('OTP cannot be empty')),
+      );
+      return false;
+    }
+    return true;
+  }
+
   // Fungsi untuk verifikasi OTP
   Future<void> verifyOtp() async {
+    if (!_validateOtpInput()) return; // Validasi input OTP sebelum verifikasi
+
     if (_otpController.text == generatedOtp) {
       Navigator.push(
         context,

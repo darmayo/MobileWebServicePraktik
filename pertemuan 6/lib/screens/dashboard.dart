@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase
-import 'payment_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/payment_service.dart';
 
 class DashboardScreen extends StatefulWidget {
-  final VoidCallback clearInputs; // Menambahkan parameter clearInputs
+  final VoidCallback clearInputs;
 
   DashboardScreen({required this.clearInputs});
 
@@ -13,35 +13,48 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final PaymentService paymentService = PaymentService();
-  final SupabaseClient supabase = Supabase.instance.client; // Instance Supabase
+  final SupabaseClient supabase = Supabase.instance.client;
+
   List<FoodItem> selectedItems = [];
-  String? userEmail; // Variabel untuk menyimpan email pengguna
-  String? userName; // Variabel untuk menyimpan nama pengguna
+  String? userEmail;
+  String? userName;
+  String? userPhone;
+  String paymentInstructions = '';
 
   @override
   void initState() {
     super.initState();
-    _fetchUserDetails(); // Memanggil fungsi untuk mengambil email dan nama pengguna
+    _fetchUserDetails();
   }
 
-  // Fungsi untuk mengambil email dan nama pengguna yang sedang login dari Supabase
+  // Ambil data pengguna dari Supabase
   void _fetchUserDetails() async {
     final user = supabase.auth.currentUser;
     if (user != null) {
-      final response = await supabase
-          .from('users')
-          .select('name')
-          .eq('user_id', user.id)
-          .maybeSingle();
+      try {
+        final response = await supabase
+            .from('users')
+            .select('name, email, phone')
+            .eq('user_id', user.id)
+            .maybeSingle();
 
-      setState(() {
-        userEmail = user.email; // Mengambil email dari objek user
-        userName = response?['name'] as String? ?? "User"; // Mengambil nama dari hasil query Supabase
-      });
+        print("Supabase response: $response"); // Debug response
+        setState(() {
+          userEmail = response?['email'] ?? "default@example.com";
+          userName = response?['name'] ?? "User";
+          userPhone = response?['phone'] ?? "08123456789";
+        });
+        print("Fetched email: $userEmail"); // Debug email
+      } catch (e) {
+        print('Error fetching user details: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data pengguna: $e')),
+        );
+      }
     }
   }
 
-  // Fungsi untuk menentukan sapaan berdasarkan waktu saat ini
+  // Pesan salam berdasarkan waktu
   String getGreetingMessage() {
     final hour = DateTime.now().hour;
     if (hour >= 5 && hour < 12) {
@@ -55,6 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  // Toggle pilihan item
   void toggleSelection(FoodItem item) {
     setState(() {
       if (selectedItems.contains(item)) {
@@ -65,13 +79,71 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  // Hitung total biaya
   int getTotalAmount() {
     return selectedItems.fold(0, (total, item) => total + item.amount);
   }
 
-  void logout() {
-    widget.clearInputs(); // Memanggil fungsi untuk mengosongkan input saat logout
-    Navigator.pop(context); // Kembali ke halaman login
+  // Buat transaksi pembayaran
+  Future<void> makePayment() async {
+  try {
+    if (userEmail == null || userName == null) {
+      throw Exception('Data pengguna tidak lengkap. Silakan periksa akun Anda.');
+    }
+
+    int totalAmount = getTotalAmount();
+    String email = userEmail!;
+    String firstName = userName!.split(" ").first;
+    String lastName = userName!.split(" ").last;
+    String phone = userPhone ?? "08123456789";
+
+    final response = await paymentService.createTransaction(
+      amount: totalAmount,
+      email: email,
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone,
+    );
+
+    if (response.containsKey('va_numbers')) {
+      final vaNumbers = response['va_numbers'][0];
+      final bank = vaNumbers['bank'];
+      final vaNumber = vaNumbers['va_number'];
+
+      setState(() {
+        paymentInstructions =
+            'Transfer ke Bank $bank\nNomor Virtual Account: $vaNumber\nJumlah: Rp$totalAmount';
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Transaksi berhasil dibuat! Silakan lakukan pembayaran.')),
+      );
+    } else {
+      throw Exception('Transaksi gagal. Respons tidak valid.');
+    }
+  } catch (e) {
+    print('Error during transaction: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Gagal membuat transaksi: ${e.toString()}')),
+    );
+  }
+}
+
+
+  // Logout
+  Future<void> logout() async {
+    try {
+      await supabase.auth.signOut();
+      widget.clearInputs();
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logout berhasil')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logout gagal: $e')),
+      );
+    }
   }
 
   @override
@@ -83,7 +155,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
-            onPressed: logout, // Memanggil fungsi logout saat tombol logout diklik
+            onPressed: logout,
           ),
         ],
       ),
@@ -109,7 +181,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       Text(
                         getGreetingMessage(),
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -194,30 +266,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     SizedBox(height: 10),
                     ElevatedButton(
-                      onPressed: () async {
-                        int totalAmount = getTotalAmount();
-                        String email = userEmail ?? "default@example.com"; // Menggunakan email pengguna atau default
-                        String firstName = userName?.split(" ").first ?? "User";
-                        String lastName = userName?.split(" ").last ?? "Example";
-                        String phone = "08123456789"; // Ganti dengan nomor telepon pengguna jika tersedia
-
-                        try {
-                          await paymentService.createTransaction(totalAmount, email, firstName, lastName, phone);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Pembayaran berhasil diproses')),
-                          );
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Pembayaran gagal: $e')),
-                          );
-                        }
-                      },
+                      onPressed: makePayment,
                       child: Text('Lanjutkan ke Pembayaran'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.amber,
                         padding: EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
+                    if (paymentInstructions.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20.0),
+                        child: Text(
+                          paymentInstructions,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -228,7 +291,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// Definisi kelas FoodItem
+// Model untuk Item
 class FoodItem {
   final String imagePath;
   final String foodName;
@@ -245,15 +308,12 @@ class FoodItem {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is FoodItem &&
-          runtimeType == other.runtimeType &&
-          foodName == other.foodName;
+      other is FoodItem && runtimeType == other.runtimeType && foodName == other.foodName;
 
   @override
   int get hashCode => foodName.hashCode;
 }
 
-// Definisi widget FoodItemWidget
 class FoodItemWidget extends StatelessWidget {
   final FoodItem item;
   final bool isSelected;
