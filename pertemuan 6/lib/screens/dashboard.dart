@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/payment_service.dart';
+import '../utils/theme_manager.dart'; // Mengimpor themeNotifier untuk Dark Mode
 
 class DashboardScreen extends StatefulWidget {
   final VoidCallback clearInputs;
@@ -20,14 +21,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? userName;
   String? userPhone;
   String paymentInstructions = '';
+  String greetingMessage = ''; // State untuk salam
+  bool isDarkMode = false; // State lokal untuk Dark Mode
 
   @override
   void initState() {
     super.initState();
     _fetchUserDetails();
+    _updateGreetingMessage();
+    _startRealTimeGreeting();
   }
 
-  // Ambil data pengguna dari Supabase
+  // Mengambil data pengguna dari Supabase
   void _fetchUserDetails() async {
     final user = supabase.auth.currentUser;
     if (user != null) {
@@ -38,15 +43,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             .eq('user_id', user.id)
             .maybeSingle();
 
-        print("Supabase response: $response"); // Debug response
         setState(() {
           userEmail = response?['email'] ?? "default@example.com";
           userName = response?['name'] ?? "User";
           userPhone = response?['phone'] ?? "08123456789";
         });
-        print("Fetched email: $userEmail"); // Debug email
       } catch (e) {
-        print('Error fetching user details: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal memuat data pengguna: $e')),
         );
@@ -54,21 +56,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // Pesan salam berdasarkan waktu
-  String getGreetingMessage() {
+  // Perbarui salam berdasarkan waktu
+  void _updateGreetingMessage() {
     final hour = DateTime.now().hour;
     if (hour >= 5 && hour < 12) {
-      return 'Selamat Pagi';
+      greetingMessage = 'Selamat Pagi';
     } else if (hour >= 12 && hour < 15) {
-      return 'Selamat Siang';
+      greetingMessage = 'Selamat Siang';
     } else if (hour >= 15 && hour < 18) {
-      return 'Selamat Sore';
+      greetingMessage = 'Selamat Sore';
     } else {
-      return 'Selamat Malam';
+      greetingMessage = 'Selamat Malam';
     }
   }
 
-  // Toggle pilihan item
+  // Jalankan timer untuk memperbarui salam secara real-time
+  void _startRealTimeGreeting() {
+    Future.delayed(Duration(seconds: 1), () {
+      if (mounted) {
+        setState(() {
+          _updateGreetingMessage();
+        });
+        _startRealTimeGreeting();
+      }
+    });
+  }
+
+  // Toggle pilihan item makanan
   void toggleSelection(FoodItem item) {
     setState(() {
       if (selectedItems.contains(item)) {
@@ -79,58 +93,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  // Hitung total biaya
+  // Hitung total harga makanan yang dipilih
   int getTotalAmount() {
     return selectedItems.fold(0, (total, item) => total + item.amount);
   }
 
-  // Buat transaksi pembayaran
+  // Membuat transaksi pembayaran
   Future<void> makePayment() async {
-  try {
-    if (userEmail == null || userName == null) {
-      throw Exception('Data pengguna tidak lengkap. Silakan periksa akun Anda.');
-    }
+    try {
+      if (userEmail == null || userName == null) {
+        throw Exception('Data pengguna tidak lengkap. Silakan periksa akun Anda.');
+      }
 
-    int totalAmount = getTotalAmount();
-    String email = userEmail!;
-    String firstName = userName!.split(" ").first;
-    String lastName = userName!.split(" ").last;
-    String phone = userPhone ?? "08123456789";
+      int totalAmount = getTotalAmount();
+      String email = userEmail!;
+      String firstName = userName!.split(" ").first;
+      String lastName = userName!.split(" ").last;
+      String phone = userPhone ?? "08123456789";
 
-    final response = await paymentService.createTransaction(
-      amount: totalAmount,
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
-      phone: phone,
-    );
-
-    if (response.containsKey('va_numbers')) {
-      final vaNumbers = response['va_numbers'][0];
-      final bank = vaNumbers['bank'];
-      final vaNumber = vaNumbers['va_number'];
-
-      setState(() {
-        paymentInstructions =
-            'Transfer ke Bank $bank\nNomor Virtual Account: $vaNumber\nJumlah: Rp$totalAmount';
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Transaksi berhasil dibuat! Silakan lakukan pembayaran.')),
+      final response = await paymentService.createTransaction(
+        amount: totalAmount,
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
       );
-    } else {
-      throw Exception('Transaksi gagal. Respons tidak valid.');
+
+      if (response.containsKey('va_numbers')) {
+        final vaNumbers = response['va_numbers'][0];
+        final bank = vaNumbers['bank'];
+        final vaNumber = vaNumbers['va_number'];
+
+        setState(() {
+          paymentInstructions =
+              'Transfer ke Bank $bank\nNomor Virtual Account: $vaNumber\nJumlah: Rp$totalAmount';
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Transaksi berhasil dibuat! Silakan lakukan pembayaran.')),
+        );
+      } else {
+        throw Exception('Transaksi gagal. Respons tidak valid.');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal membuat transaksi: ${e.toString()}')),
+      );
     }
-  } catch (e) {
-    print('Error during transaction: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Gagal membuat transaksi: ${e.toString()}')),
-    );
   }
-}
 
-
-  // Logout
+  // Logout pengguna
   Future<void> logout() async {
     try {
       await supabase.auth.signOut();
@@ -148,11 +160,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    isDarkMode = themeNotifier.value == ThemeMode.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Dashboard'),
         backgroundColor: Colors.purple,
         actions: [
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.wb_sunny : Icons.nightlight_round),
+            onPressed: () {
+              setState(() {
+                themeNotifier.value =
+                    isDarkMode ? ThemeMode.light : ThemeMode.dark;
+              });
+            },
+          ),
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: logout,
@@ -176,11 +199,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Hallo, $userName',
+                        'Hallo, ${userName ?? "User"}',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        getGreetingMessage(),
+                        greetingMessage,
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
