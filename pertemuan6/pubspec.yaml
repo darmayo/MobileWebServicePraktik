@@ -1,0 +1,35 @@
+name: flutter_app
+description: A new Flutter project for login and dashboard with OTP verification.
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.19.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  encrypt: ^5.0.0
+  flutter_dotenv: ^5.0.2
+  supabase_flutter: ^2.8.1
+  http: ^1.2.2
+  url_launcher: ^6.0.20
+  mockito: ^5.3.2
+  build_runner: ^2.3.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Daftar assets (gambar-gambar yang digunakan dalam proyek)
+  assets:
+    - assets/images/avatar.png
+    - assets/images/food_image.png
+    - assets/images/noodle.png
+    - assets/images/chicken.png
+    - assets/images/french_fries.png
+    - assets/images/login_image.png
