@@ -42,41 +42,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return true;
   }
 
+  // Fungsi untuk registrasi pengguna baru
   Future<void> register() async {
-  if (!_validateInputs()) return;
+    if (!_validateInputs()) return;
 
-  setState(() {
-    isLoading = true;
-  });
-  try {
-    final AuthResponse response = await Supabase.instance.client.auth.signUp(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
-
-    if (response.user != null) {
-      await Supabase.instance.client.from('users').insert({
-        'user_id': response.user!.id,
-        'name': _nameController.text,
-        'phone': _phoneController.text,
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registrasi berhasil!')),
-      );
-      Navigator.pop(context);
-    }
-  } catch (e) {
-    print('Registration failed: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Kesalahan saat registrasi: ${e.toString()}')),
-    );
-  } finally {
     setState(() {
-      isLoading = false;
+      isLoading = true;
     });
+
+    try {
+      // Registrasi pengguna menggunakan Supabase Auth
+      final AuthResponse response = await Supabase.instance.client.auth.signUp(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      if (response.user != null) {
+        // Menambahkan data pengguna ke tabel `users`
+        await Supabase.instance.client.from('users').insert({
+          'user_id': response.user!.id,
+          'name': _nameController.text,
+          'email': _emailController.text,
+          'phone': _phoneController.text,
+        });
+
+        // Berhasil registrasi
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Registrasi berhasil!')),
+        );
+
+        // Kembali ke halaman sebelumnya
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal registrasi. Silakan coba lagi.')),
+        );
+      }
+    } catch (e) {
+      print('Registration failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Kesalahan saat registrasi: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {

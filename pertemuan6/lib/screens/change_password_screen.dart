@@ -1,71 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Supabase.initialize(
-    url: 'https://owlegltfdnlmphpkgrxj.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93bGVnbHRmZG5sbXBocGtncnhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk4NjY0NTUsImV4cCI6MjA0NTQ0MjQ1NX0.pv9z34zDYse02LdNCcDgYfJoAAPoM8BiS6eF6yyVM04',
-  );
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: EditProfileScreen(
-        userData: {
-          'id': '1',
-          'name': 'John Doe',
-          'email': 'john.doe@example.com',
-          'phone': '08123456789',
-        },
-      ),
-    );
-  }
-}
-
-class UserService {
-  final SupabaseClient _supabase = Supabase.instance.client;
-
-  Future<List<Map<String, dynamic>>> fetchUsers() async {
-    try {
-      final response = await _supabase.from('users').select('id, name, email, phone');
-
-      if (response == null || response.isEmpty) {
-        print('Tidak ada pengguna ditemukan.');
-        return [];
-      }
-
-      return List<Map<String, dynamic>>.from(response);
-    } catch (e) {
-      print('Error fetching users: $e');
-      throw Exception('Gagal mengambil data pengguna.');
-    }
-  }
-
-  Future<void> updateUser(String id, Map<String, dynamic> updatedData) async {
-    try {
-      await _supabase.from('users').update(updatedData).eq('id', id);
-      print('User dengan ID $id berhasil diperbarui');
-    } catch (e) {
-      print('Error: $e');
-      throw Exception('Gagal memperbarui data pengguna: $e');
-    }
-  }
-
-  Future<void> deleteUser(String id) async {
-    try {
-      await _supabase.from('users').delete().eq('id', id);
-      print('User dengan ID $id berhasil dihapus');
-    } catch (e) {
-      print('Error: $e');
-      throw Exception('Gagal menghapus pengguna: $e');
-    }
-  }
-}
+import '../services/user_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -107,11 +41,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           'email': _emailController.text,
           'phone': _phoneController.text,
         };
+
         await _userService.updateUser(widget.userData['id'], updatedData);
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profil berhasil diperbarui')),
         );
-        Navigator.pop(context, updatedData);
+
+        Navigator.pop(context, updatedData); // Kembalikan data yang telah diperbarui
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal memperbarui profil: $e')),
@@ -140,13 +77,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         );
       },
     );
+
     if (confirm) {
       try {
         await _userService.deleteUser(widget.userData['id']);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Akun berhasil dihapus')),
         );
-        Navigator.pop(context);
+        Navigator.pop(context); // Kembali ke halaman sebelumnya
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal menghapus akun: $e')),
@@ -178,7 +116,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
-                readOnly: true,
+                readOnly: true, // Email hanya bisa dibaca
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -218,73 +156,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   backgroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class ChangePasswordScreen extends StatefulWidget {
-  @override
-  _ChangePasswordScreenState createState() => _ChangePasswordScreenState();
-}
-
-class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _oldPasswordController = TextEditingController();
-  final TextEditingController _newPasswordController = TextEditingController();
-
-  @override
-  void dispose() {
-    _oldPasswordController.dispose();
-    _newPasswordController.dispose();
-    super.dispose();
-  }
-
-  void _changePassword() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password berhasil diubah')),
-      );
-      Navigator.pop(context);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ganti Password'),
-        backgroundColor: Colors.purple,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _oldPasswordController,
-                decoration: const InputDecoration(labelText: 'Password Lama'),
-                obscureText: true,
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Masukkan password lama' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _newPasswordController,
-                decoration: const InputDecoration(labelText: 'Password Baru'),
-                obscureText: true,
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Masukkan password baru' : null,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _changePassword,
-                child: const Text('Simpan'),
               ),
             ],
           ),

@@ -26,11 +26,15 @@ class FoodItemWidget extends StatelessWidget {
   final FoodItem item;
   final bool isSelected;
   final Function(FoodItem) onSelect;
+  final Function(FoodItem) onEdit; // Callback untuk Edit
+  final Function(FoodItem) onDelete; // Callback untuk Hapus
 
   const FoodItemWidget({
     required this.item,
     required this.isSelected,
     required this.onSelect,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   @override
@@ -59,6 +63,23 @@ class FoodItemWidget extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(Icons.edit, color: Colors.blue),
+                onPressed: () {
+                  onEdit(item); // Memanggil callback Edit
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.delete, color: Colors.red),
+                onPressed: () {
+                  onDelete(item); // Memanggil callback Hapus
+                },
+              ),
+            ],
           ),
           Checkbox(
             value: isSelected,

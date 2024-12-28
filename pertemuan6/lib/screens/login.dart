@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math';
-import 'dashboard.dart'; // Import Dashboard
-import 'register.dart'; // Import Register
-import 'forgot_password.dart'; // Import ForgotPassword
+import 'dashboard.dart'; 
+import 'register.dart'; 
+import 'forgot_password.dart'; 
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -18,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isOtpSent = false;
   bool isLoading = false;
   String? generatedOtp;
+  String? userName; // Tambahkan nama pengguna untuk ditampilkan di dashboard
 
   // Fungsi untuk mengosongkan semua input
   void clearInputs() {
@@ -87,21 +88,36 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (response.user != null) {
-        // Mengambil nomor telepon dari database
-        String? phoneNumber = await _getPhoneNumber(response.user!.id);
+        // Ambil data pengguna dari database
+        final userData = await Supabase.instance.client
+            .from('users')
+            .select()
+            .eq('user_id', response.user!.id)
+            .maybeSingle();
 
-        if (phoneNumber != null) {
-          generatedOtp = _generateOtp();
-          await _sendOtp(phoneNumber, generatedOtp!);
-
+        if (userData != null) {
+          // Simpan nama pengguna untuk ditampilkan di dashboard
           setState(() {
-            isOtpSent = true;
+            userName = userData['name'];
           });
-          print('Login successful, OTP sent');
+
+          // Kirim OTP ke nomor telepon pengguna
+          String? phoneNumber = userData['phone'];
+          if (phoneNumber != null) {
+            generatedOtp = _generateOtp();
+            await _sendOtp(phoneNumber, generatedOtp!);
+
+            setState(() {
+              isOtpSent = true;
+            });
+            print('Login successful, OTP sent');
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Phone number not found.')),
+            );
+          }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Phone number not found.')),
-          );
+          print('User data not found. Default values used.');
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -117,21 +133,6 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         isLoading = false;
       });
-    }
-  }
-
-  // Fungsi untuk mendapatkan nomor telepon dari database berdasarkan user_id
-  Future<String?> _getPhoneNumber(String userId) async {
-    final response = await Supabase.instance.client
-        .from('users')
-        .select('phone')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-    if (response != null && response['phone'] != null) {
-      return response['phone'] as String?;
-    } else {
-      return null;
     }
   }
 
@@ -154,7 +155,9 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => DashboardScreen(clearInputs: clearInputs),
+          builder: (context) => DashboardScreen(
+            clearInputs: clearInputs,
+          ),
         ),
       );
     } else {

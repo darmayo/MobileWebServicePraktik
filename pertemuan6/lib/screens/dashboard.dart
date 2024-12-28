@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/payment_service.dart';
-import '../utils/theme_manager.dart'; // Mengimpor themeNotifier untuk Dark Mode
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tzdata;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../utils/theme_manager.dart';
 
 class DashboardScreen extends StatefulWidget {
   final VoidCallback clearInputs;
@@ -13,76 +17,136 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final PaymentService paymentService = PaymentService();
   final SupabaseClient supabase = Supabase.instance.client;
 
-  List<FoodItem> selectedItems = [];
   String? userEmail;
   String? userName;
   String? userPhone;
-  String paymentInstructions = '';
-  String greetingMessage = ''; // State untuk salam
-  bool isDarkMode = false; // State lokal untuk Dark Mode
+  String greetingMessage = '';
+  List<FoodItem> selectedItems = [];
 
   @override
   void initState() {
     super.initState();
+    tzdata.initializeTimeZones();
     _fetchUserDetails();
     _updateGreetingMessage();
-    _startRealTimeGreeting();
   }
 
-  // Mengambil data pengguna dari Supabase
-  void _fetchUserDetails() async {
-    final user = supabase.auth.currentUser;
-    if (user != null) {
-      try {
-        final response = await supabase
-            .from('users')
-            .select('name, email, phone')
-            .eq('user_id', user.id)
-            .maybeSingle();
+  // Ambil detail pengguna dari database
+void _fetchUserDetails() async {
+  final user = supabase.auth.currentUser;
+  if (user != null) {
+    try {
+      final response = await supabase
+          .from('users')
+          .select('name, email, phone')
+          .eq('user_id', user.id)
+          .maybeSingle();
 
+      if (response != null) {
         setState(() {
-          userEmail = response?['email'] ?? "default@example.com";
-          userName = response?['name'] ?? "User";
-          userPhone = response?['phone'] ?? "08123456789";
+          userEmail = response['email'] ?? "default@example.com";
+          userName = response['name'] ?? "User";
+          userPhone = response['phone'] ?? "08123456789";
         });
-      } catch (e) {
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat data pengguna: $e')),
+          SnackBar(content: Text('Data pengguna tidak ditemukan.')),
         );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memuat detail pengguna: $e')),
+      );
     }
   }
+}
 
-  // Perbarui salam berdasarkan waktu
+  // Perbarui ucapan berdasarkan waktu
   void _updateGreetingMessage() {
-    final hour = DateTime.now().hour;
-    if (hour >= 5 && hour < 12) {
-      greetingMessage = 'Selamat Pagi';
-    } else if (hour >= 12 && hour < 15) {
-      greetingMessage = 'Selamat Siang';
-    } else if (hour >= 15 && hour < 18) {
-      greetingMessage = 'Selamat Sore';
-    } else {
-      greetingMessage = 'Selamat Malam';
-    }
-  }
+    final location = tz.getLocation('Asia/Jakarta');
+    final now = tz.TZDateTime.now(location);
+    print('Waktu lokal (Asia/Jakarta): $now');
 
-  // Jalankan timer untuk memperbarui salam secara real-time
-  void _startRealTimeGreeting() {
-    Future.delayed(Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _updateGreetingMessage();
-        });
-        _startRealTimeGreeting();
+    final hour = now.hour;
+    setState(() {
+      if (hour >= 5 && hour < 12) {
+        greetingMessage = 'Selamat Pagi';
+      } else if (hour >= 12 && hour < 15) {
+        greetingMessage = 'Selamat Siang';
+      } else if (hour >= 15 && hour < 18) {
+        greetingMessage = 'Selamat Sore';
+      } else {
+        greetingMessage = 'Selamat Malam';
       }
     });
   }
 
-  // Toggle pilihan item makanan
+  // Proses pembayaran dengan Midtrans
+  Future<void> _processPayment() async {
+    final url = Uri.parse('https://api.sandbox.midtrans.com/v2/charge');
+    final serverKey = "SB-Mid-server-TQgYv4K0-Q4CEx4jsgaKJEkI"; // Ganti dengan server key Anda
+
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Basic ' + base64Encode(utf8.encode('$serverKey:')),
+    };
+
+    final body = {
+      "payment_type": "bank_transfer",
+      "transaction_details": {
+        "order_id": "order-${DateTime.now().millisecondsSinceEpoch}",
+        "gross_amount": getTotalAmount(),
+      },
+      "bank_transfer": {
+        "bank": "bca"
+      },
+      "customer_details": {
+      "first_name": userName ?? 'Guest',
+      "email": userEmail ?? 'default@example.com',
+      "phone": userPhone ?? '08123456789'
+      }
+
+    };
+
+    try {
+      final response = await http.post(url, headers: headers, body: json.encode(body));
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        print("Payment Success: $responseData");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Pembayaran berhasil diproses.')),
+        );
+      } else {
+        print("Payment Failed: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Pembayaran gagal: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      print("Error processing payment: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Terjadi kesalahan: $e')),
+      );
+    }
+  }
+
+  // Navigasi ke halaman profil
+  void _navigateToProfileOptions() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfileOptionsScreen(
+          userName: userName ?? "User",
+          userEmail: userEmail ?? "default@example.com",
+        ),
+      ),
+    );
+  }
+
+  // Toggle pemilihan makanan
   void toggleSelection(FoodItem item) {
     setState(() {
       if (selectedItems.contains(item)) {
@@ -93,92 +157,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  // Hitung total harga makanan yang dipilih
+  // Hitung total harga
   int getTotalAmount() {
     return selectedItems.fold(0, (total, item) => total + item.amount);
   }
 
-  // Membuat transaksi pembayaran
-  Future<void> makePayment() async {
-    try {
-      if (userEmail == null || userName == null) {
-        throw Exception('Data pengguna tidak lengkap. Silakan periksa akun Anda.');
-      }
-
-      int totalAmount = getTotalAmount();
-      String email = userEmail!;
-      String firstName = userName!.split(" ").first;
-      String lastName = userName!.split(" ").last;
-      String phone = userPhone ?? "08123456789";
-
-      final response = await paymentService.createTransaction(
-        amount: totalAmount,
-        email: email,
-        firstName: firstName,
-        lastName: lastName,
-        phone: phone,
-      );
-
-      if (response.containsKey('va_numbers')) {
-        final vaNumbers = response['va_numbers'][0];
-        final bank = vaNumbers['bank'];
-        final vaNumber = vaNumbers['va_number'];
-
-        setState(() {
-          paymentInstructions =
-              'Transfer ke Bank $bank\nNomor Virtual Account: $vaNumber\nJumlah: Rp$totalAmount';
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Transaksi berhasil dibuat! Silakan lakukan pembayaran.')),
-        );
-      } else {
-        throw Exception('Transaksi gagal. Respons tidak valid.');
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal membuat transaksi: ${e.toString()}')),
-      );
-    }
-  }
-
-  // Logout pengguna
-  Future<void> logout() async {
-    try {
-      await supabase.auth.signOut();
-      widget.clearInputs();
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Logout berhasil')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Logout gagal: $e')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    isDarkMode = themeNotifier.value == ThemeMode.dark;
+    final themeManager = Provider.of<ThemeManager>(context);
+    final isDarkMode = themeManager.themeMode == ThemeMode.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard'),
+        title: const Text('Dashboard'),
         backgroundColor: Colors.purple,
         actions: [
           IconButton(
             icon: Icon(isDarkMode ? Icons.wb_sunny : Icons.nightlight_round),
-            onPressed: () {
-              setState(() {
-                themeNotifier.value =
-                    isDarkMode ? ThemeMode.light : ThemeMode.dark;
-              });
-            },
+            onPressed: themeManager.toggleTheme,
           ),
           IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: logout,
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await supabase.auth.signOut();
+              widget.clearInputs();
+              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+            },
           ),
         ],
       ),
@@ -186,31 +190,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header informasi pengguna
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundImage: AssetImage('assets/images/avatar.png'),
-                  ),
-                  SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Hallo, ${userName ?? "User"}',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        greetingMessage,
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ],
+              child: InkWell(
+                onTap: _navigateToProfileOptions,
+                child: Row(
+                  children: [
+                    const CircleAvatar(
+                      radius: 30,
+                      backgroundImage: AssetImage('assets/images/avatar.png'),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Tampilkan nama pengguna
+                        Text(
+                          'Hallo, ${userName ?? "User"}',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        // Tampilkan ucapan waktu
+                        Text(
+                          greetingMessage,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
+            // Banner gambar makanan
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ClipRRect(
@@ -223,10 +234,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
+            // Daftar makanan
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   FoodItemWidget(
                     item: FoodItem(
@@ -276,6 +287,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
             ),
+            // Total harga
             if (selectedItems.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -284,29 +296,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Text(
                       'Total: Rp${getTotalAmount()}',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     ElevatedButton(
-                      onPressed: makePayment,
-                      child: Text('Lanjutkan ke Pembayaran'),
+                      onPressed: _processPayment,
+                      child: const Text('Lanjutkan ke Pembayaran'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.amber,
-                        padding: EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
-                    if (paymentInstructions.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20.0),
-                        child: Text(
-                          paymentInstructions,
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
                   ],
                 ),
               ),
+            // Tombol Cek Ongkir dan Daftar Pengguna
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/checkShipping');
+                    },
+                    child: const Text('Cek Ongkir'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/userList');
+                    },
+                    child: const Text('Daftar Pengguna'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -314,7 +347,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// Model untuk Item
 class FoodItem {
   final String imagePath;
   final String foodName;
@@ -359,14 +391,14 @@ class FoodItemWidget extends StatelessWidget {
             height: 100,
             width: 100,
           ),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   item.foodName,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   item.price,
@@ -386,3 +418,82 @@ class FoodItemWidget extends StatelessWidget {
     );
   }
 }
+
+class ProfileOptionsScreen extends StatelessWidget {
+  final String userName;
+  final String userEmail;
+
+  const ProfileOptionsScreen({required this.userName, required this.userEmail, Key? key})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profil Saya'),
+        backgroundColor: Colors.purple,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Nama: $userName',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Email: $userEmail',
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/editProfile');
+              },
+              child: const Text('Edit Profil'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/changePassword');
+              },
+              child: const Text('Ganti Password'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final confirm = await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Hapus Akun'),
+                      content: const Text('Apakah Anda yakin ingin menghapus akun ini?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Batal'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Hapus'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+
+                if (confirm == true) {
+                  // Logika hapus akun di sini
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Akun berhasil dihapus')),
+                  );
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('Hapus Akun'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+} 
